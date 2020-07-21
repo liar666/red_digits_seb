@@ -36,7 +36,7 @@ def draw_digit(image, top_left, bottom_right):
         print(">>> draw_digit::y.scale="+str(scale_y))
         print(">>> draw_digit::min.scale="+str(scale))
         print(">>> draw_digit::rd.scale="+str(scale))
-    if scale < .01:
+    if scale < .1:  # Image is 60x1?? => 10% of it is 6x1? pixels... => not sure it is enough to distinguish digits
         print("===== > scale too small!")
     else:
         resize_x = int(number_img.width*scale)
