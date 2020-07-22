@@ -92,30 +92,28 @@ class CNN(nn.Module):
             )
             print ("%d loss %.4f   acc %.2f%%   %s"% (epoch_index + 1, loss_, res["acc"]*100, str_time))
 
-
-        def test_me(self, input_data, target, batch_size=1):
-            data_count = input_data.shape[0]
-            assert input_data.shape[0] == target.shape[0]
-            start_ = 0
-            stop_  = 0
-            acc    = 0
-            while stop_ < data_count:
-                # Compute the positions for the current batch
-                stop_ = min([start_ + batch_size, data_count])
-                input_ = input_data[start_:stop_]
-                target_ = target[start_:stop_]
-                start_ =  stop_
-                # Compute the output of the CNN on the current batch
-                out_ = self.forward(input_)
-                out_ = out_.reshape(out_.shape[0], out_.shape[1])
-                out_class = torch.argmax(out_, dim=1)
-                # Compute the number of correct responses for this batch
-                acc += torch.sum(out_class ==  target_).item()
-            # Compute the overall accurracy
-            acc /= data_count
-            res = {'acc':acc}
-            return res
-
+    def test_me(self, input_data, target, batch_size=1):
+        data_count = input_data.shape[0]
+        assert input_data.shape[0] == target.shape[0]
+        start_ = 0
+        stop_  = 0
+        acc    = 0
+        while stop_ < data_count:
+            # Compute the positions for the current batch
+            stop_ = min([start_ + batch_size, data_count])
+            input_ = input_data[start_:stop_]
+            target_ = target[start_:stop_]
+            start_ =  stop_
+            # Compute the output of the CNN on the current batch
+            out_ = self.forward(input_)
+            out_ = out_.reshape(out_.shape[0], out_.shape[1])
+            out_class = torch.argmax(out_, dim=1)
+            # Compute the number of correct responses for this batch
+            acc += torch.sum(out_class ==  target_).item()
+        # Compute the overall accurracy
+        acc /= data_count
+        res = {'acc':acc}
+        return res
 
 
 def get_input_target(data, device):
