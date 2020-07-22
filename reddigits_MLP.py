@@ -8,7 +8,7 @@ import time
 import datetime
 
 # The unflattened shape of the images in the RData file
-NUMBER_SHAPE = { "width": 10, "height": 14, "channels": 3 }
+DIGIT_SHAPE = { "width": 10, "height": 14, "channels": 3 }
 
 # Columns where the image data is stored in the RData file
 IMG_RANGE = np.s_[1:421]
@@ -31,13 +31,13 @@ class MLP(nn.Module):
 
     def forward(self, x):
         # Flatten image input
-        x = x.view(-1, NUMBER_SHAPE["height"] * NUMBER_SHAPE["width"])
+        x = x.view(-1, DIGIT_SHAPE["height"] * DIGIT_SHAPE["width"])
         # Connect the layers
         x = self.hdd_actv(self.fc1(x))
         x = self.out_actv(self.fc2(x))
         return x
 
-    def train_me(self, input_data_train, target_train, input_data_test, target_test, nn_optimizer, criterion, batch_size=1):
+    def train_me(self, input_data_train, target_train, input_data_test, target_test, optimizer, loss, nb_epochs, batch_size=1):
         data_count = input_data_train.shape[0] 
         assert input_data_train.shape[0] == target_train.shape[0]
     
@@ -55,7 +55,7 @@ class MLP(nn.Module):
             loss_  = 0
             while stop_ < data_count:
                 # Reset the gradients between each batch
-                nn_optimizer.zero_grad()
+                optimizer.zero_grad()
                 
                 # Compute the positions of the current batch
                 stop_ = min([start_ + batch_size, data_count])
@@ -70,10 +70,10 @@ class MLP(nn.Module):
                 out_ = self.forward(input_)
     
                 # Compute the loss on the batch data
-                loss = criterion(out_, target_)
-                loss.backward()
-                nn_optimizer.step()  # Does the update
-                loss_ += loss.item()
+                loss_func = loss(out_, target_)
+                loss_func.backward()
+                optimizer.step()  # Does the update
+                loss_ += loss_func.item()
     
                 count += 1
             
@@ -126,7 +126,7 @@ def get_input_target(data, device):
     target_list = []
 
     # Reshape image values as image of size digit_height*digit_width with 3 channels & Compute mean of 3 channels
-    input_data_list = [torch.sum(torch.tensor(sample[IMG_RANGE].reshape(NUMBER_SHAPE["channels"], NUMBER_SHAPE["height"], NUMBER_SHAPE["width"]),dtype=torch.float), dim=0, keepdim=True)/3 for sample in data_train]
+    input_data_list = [torch.sum(torch.tensor(sample[IMG_RANGE].reshape(DIGIT_SHAPE["channels"], DIGIT_SHAPE["height"], DIGIT_SHAPE["width"]),dtype=torch.float), dim=0, keepdim=True)/3 for sample in data_train]
     # Compute Class value based on Class 1-hot encoding
     target_list = [np.argmax(sample[CLS_RANGE]).item() for sample in data_train]
     
@@ -153,13 +153,15 @@ if __name__ == "__main__":
     # plt.imshow(img)
     # plt.show()
     
+    # Format the data for the MLP
     print(">> Formatting data for MLP")
     input_data_train, target_train = get_input_target(data_train, DEVICE)
     input_data_test, target_test = get_input_target(data_test, DEVICE)
     
+    
     # Define a few parameters for the MLP
     mu          = 0.001
-    input_size  = (NUMBER_SHAPE["height"], NUMBER_SHAPE["width"]) # 140
+    input_size  = (DIGIT_SHAPE["height"], DIGIT_SHAPE["width"]) # 140
     hidden_size = 500
     out_size    = len(CLASSES)
     batch_size  = 1000
@@ -176,6 +178,7 @@ if __name__ == "__main__":
     # Train the MLP
     print(">> Training MLP")
     mlp.train_me(input_data_train=input_data_train, target_train=target_train,
-              input_data_test=input_data_test,   target_test=target_test,
-              nn_optimizer=nn_optimizer, criterion=nn_loss, batch_size=batch_size)
+              input_data_test=input_data_test, target_test=target_test,
+              optimizer=nn_optimizer, loss=nn_loss,
+              nb_epochs=nb_epochs, batch_size=batch_size)
     
