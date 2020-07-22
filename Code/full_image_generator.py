@@ -13,7 +13,7 @@ rd.seed(42)
 
 
 DIGIT_IMG_DIR="/home/gmuller/Python/RedDigitsSeb/red_digits_seb/Data/Images/numbers_cleaned/"
-OUT_IMG_DIR="./test_images/"
+OUT_IMG_DIR="../test_images/"
 CLASSES=[0,1,2,3,4,5,6,7,8,9,"E","H"]
 DEBUG=False
 
@@ -26,7 +26,7 @@ def draw_digit(image, top_left, bottom_right):
     if DEBUG:
         print(">>> draw_digit::top_left="+str(top_left)+" / bottom_right="+str(bottom_right))
         print(">>> draw_digit::number="+str(number_val))
-    
+
     scale_x = (bottom_right[0] - top_left[0]) / number_img.width
     scale_y = (bottom_right[1] - top_left[1]) / number_img.height
     scale = min(scale_x, scale_y)
@@ -100,4 +100,3 @@ if __name__ == "__main__":
         split_dir = split_dirs[rd.randint(0, 1)]
         generate_full_image(background, (0,0), (img_size, img_size), nb_digits, split_dir)
         background.save(OUT_IMG_DIR+"/img_"+str(nbi)+".png", "PNG")
-
